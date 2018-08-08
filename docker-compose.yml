@@ -1,0 +1,37 @@
+version: "3.5"
+services:
+  nginx:
+    image: nginx:1.15.1
+    ports:
+      - 80:80
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+
+  backend:
+    image: haskell:8.4.3
+    ports:
+      - 8081:8081
+    volumes:
+      - ./backend:/root
+    working_dir: /root
+    command: sh entrypoint.sh
+
+  frontend:
+    build:
+      context: docker/frontend/
+      dockerfile: Dockerfile.build
+    ports:
+      - 1234:1234
+      - 1235:1235
+    volumes:
+      - ./frontend:/root
+    working_dir: /root
+    command: ./entrypoint.sh
+
+
+networks:
+  default:
+    external:
+      name: blog-test

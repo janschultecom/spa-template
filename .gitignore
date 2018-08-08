@@ -1,0 +1,25 @@
+# Frontend - Purescript
+*bower_components/
+*node_modules/
+*.pulp-cache/
+*output/
+*generated-docs/
+*.psc-package/
+*.psc*
+*.purs*
+*.psa*
+*dist/
+
+# Backend - Haskell
+*.stack-work/
+*.stack/
+servant-test.cabal
+
+
+# Editors
+*.vscode/
+*.bash_history
+
+# Other
+*.cache/
+*~

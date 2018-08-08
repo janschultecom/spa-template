@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "set": "testing",
+  "source": "",
+  "depends": [
+    "aff",
+    "affjax",
+    "spork",
+    "prelude"
+  ]
+}
