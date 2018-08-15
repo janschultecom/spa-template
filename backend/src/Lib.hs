@@ -19,7 +19,8 @@ import Control.Monad.IO.Class
 import System.Directory
 import Control.Monad.Reader
 
-isaac = User "Isaac Newton"    372 "isaac@newton.co.uk" (UTCTime (fromGregorian 1683  3 1) (secondsToDiffTime 0))
+isaac = User "Isaac Newton Z5"    372 "isaac@newton.co.uk" (UTCTime (fromGregorian 1683  3 1) (secondsToDiffTime 0))
+
 albert = User "Albert Einstein" 136 "ae@mc2.org"         (UTCTime (fromGregorian 1905 12 1) (secondsToDiffTime 0))
 richard = User "Richard Feynman" 100 "richard@feynman.org" (UTCTime (fromGregorian 1918 1 5) (secondsToDiffTime 0))
 

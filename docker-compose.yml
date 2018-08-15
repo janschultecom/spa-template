@@ -10,13 +10,18 @@ services:
       - backend
 
   backend:
-    image: haskell:8.4.3
+    #image: haskell:8.4.3
+    build:
+      context: docker/backend/
+      dockerfile: Dockerfile.build
     ports:
       - 8081:8081
     volumes:
       - ./backend:/root
     working_dir: /root
-    command: sh entrypoint.sh
+    command: ./entrypoint.sh
+    stdin_open: true
+    tty: true
 
   frontend:
     build:

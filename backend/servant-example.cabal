@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e21d2fc3d4ab8c8833186e1ca77941da98c6d12bdcfcfd05f4003ef53f7e30d1
+-- hash: 5711c74fa689e5a2d51b42ed815f8ba820b7c8d688f0844762c702803a8710a2
 
 name:           servant-example
 version:        0.1.0.0
@@ -13,7 +13,6 @@ author:         Jan Schulte
 maintainer:     jan@janschulte.com
 copyright:      2018 Jan Schulte
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:
