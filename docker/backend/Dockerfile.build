@@ -1,0 +1,5 @@
+FROM haskell:8.4.3
+
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y psmisc

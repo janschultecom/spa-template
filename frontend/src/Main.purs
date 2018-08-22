@@ -14,10 +14,13 @@ import Effect.Console (log)
 import Network.HTTP.Affjax as AX
 import Network.HTTP.Affjax.Response as AXRes
 import Spork.App as App
+import Spork.EventQueue as EventQueue
 import Spork.Html (Html)
 import Spork.Html as H
-import Spork.Interpreter (liftNat, merge, never)
-type Model = Int
+import Spork.Interpreter (Interpreter(..), liftNat, merge, never)
+
+
+type Model = String
 
 data Action = None | Inc | Dec
 
@@ -31,8 +34,8 @@ toStorage model =
 
 update ∷ Model → Action → App.Transition TodoEffect Model Action
 update model = case _ of
-  Inc → toStorage (model + 1)
-  Dec → toStorage (model - 1)
+  Inc → toStorage (model <> "+")
+  Dec → toStorage (model <> "-")
   None -> App.purely model
 
 render ∷ Model → Html Action
@@ -50,7 +53,7 @@ render i =
     ]
 
 initialModel :: Model
-initialModel = 0
+initialModel = ""
 
 data TodoEffect a = WriteStorage Model a
 
@@ -69,10 +72,22 @@ runTodoEffect = case _ of
                     WriteStorage model next ->
                         do
                             _ <- launchAff $ do
-                                res <- AX.affjax AXRes.json (AX.defaultRequest { url = "http://localhost/api/users", method = Left GET })
+                                res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/users", method = Left GET })
                                 liftEffect $ log $ "GET /api response: " <> J.stringify res.response
                             pure next
 
+data Sub a = SendInc
+
+interpreter ∷ Interpreter Effect Sub Action
+interpreter = Interpreter $ EventQueue.withCont \queue input -> 
+  do
+    action <- launchAff $ do
+        res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/users", method = Left GET })
+        _ <- liftEffect $ log $ "GET /api response: " <> J.stringify res.response
+        pure res 
+
+    queue.push Inc
+    
 main ∷ Effect Unit
 main = do
         inst <-
