@@ -3,6 +3,7 @@
   "set": "testing",
   "source": "",
   "depends": [
+    "argonaut",
     "aff",
     "affjax",
     "spork",

@@ -3,96 +3,136 @@ module Main where
 
 import Prelude
 
-import Data.Argonaut.Core as J
+import Data.Argonaut (class DecodeJson, Json, decodeJson, stringify, (.?))
 import Data.Const (Const)
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.HTTP.Method (Method(..))
+import Data.Traversable (traverse)
 import Effect (Effect)
-import Effect.Aff (launchAff)
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Class.Console as Console
 import Effect.Console (log)
+import Effect.Exception (Error)
 import Network.HTTP.Affjax as AX
+import Network.HTTP.Affjax.Request (json)
 import Network.HTTP.Affjax.Response as AXRes
 import Spork.App as App
-import Spork.EventQueue as EventQueue
 import Spork.Html (Html)
 import Spork.Html as H
-import Spork.Interpreter (Interpreter(..), liftNat, merge, never)
+import Spork.Interpreter (merge, never, throughAff)
 
+data BlogPost = BlogPost { email :: String, name :: String }
 
-type Model = String
+data Settings = Settings { language :: String }
 
-data Action = None | Inc | Dec
+type Model = {
+  settings :: Settings,
+  maybeBlog :: Either String (Array BlogPost)
+}
 
---update ∷ Model → Action → Model
+instance decodeJsonBlogPost :: DecodeJson BlogPost where
+  decodeJson json = do
+    obj <- decodeJson json
+    email <- obj .? "email"
+    name <- obj .? "name"
+    pure $ BlogPost { email, name }
 
-toStorage ∷ Model → App.Transition TodoEffect Model Action
-toStorage model =
+instance decodeSettings :: DecodeJson Settings where
+  decodeJson json = do
+    obj <- decodeJson json
+    language <- obj .? "language"
+    pure $ Settings { language }
+
+data Action = None | Get | GotContent (Either String (Array BlogPost)) | GotSettings Settings
+
+loadContent ∷ Model → App.Transition TodoEffect Model Action
+loadContent model =
   { model
-  , effects: App.lift (WriteStorage model None)
+  , effects: App.lift (LoadContent model GotContent)
+  }
+
+loadSettings ∷ Model → App.Transition TodoEffect Model Action
+loadSettings model =
+  { model
+  , effects: App.lift (LoadSettings model GotSettings)
   }
 
 update ∷ Model → Action → App.Transition TodoEffect Model Action
-update model = case _ of
-  Inc → toStorage (model <> "+")
-  Dec → toStorage (model <> "-")
+update model @ {settings : settings, maybeBlog} = case _ of
+  GotSettings s -> App.purely { settings : s, maybeBlog }
+  GotContent body → App.purely { settings, maybeBlog : body } 
+  Get -> loadContent model
   None -> App.purely model
 
+renderPost :: BlogPost -> Array (Html Action)
+renderPost (BlogPost { email, name}) =
+  [ H.text (show email),
+    H.text (show name)
+  ]
+
+renderContent :: Either String (Array BlogPost) -> Array (Html Action)
+renderContent (Left msg) = [ H.text ("Failed to load content: " <> msg) ]
+renderContent (Right posts) = posts >>= renderPost
+
 render ∷ Model → Html Action
-render i =
-  H.div []
-    [ H.button
-        [ H.onClick (H.always_ Inc) ]
-        [ H.text "+" ]
-    , H.button
-        [ H.onClick (H.always_ Dec) ]
-        [ H.text "-" ]
-    , H.span []
-        [ H.text (show i)
-        ]
-    ]
+render { settings : Settings s, maybeBlog } = 
+    H.div []
+      [ H.p []   
+          [ H.text ("Language " <> s.language) ]
+      , H.button
+          [ H.onClick (H.always_ Get) ]
+          [ H.text "Got blog, get more..." ]
+      , H.span []
+          (renderContent maybeBlog)
+      ]
+
+defaultSettings :: Settings 
+defaultSettings = Settings { language: "en" }
 
 initialModel :: Model
-initialModel = ""
+initialModel = { settings : defaultSettings , maybeBlog : Left "" } 
 
-data TodoEffect a = WriteStorage Model a
+data TodoEffect a = LoadContent Model (Either String (Array BlogPost) -> a) |
+  LoadSettings Model (Settings -> a)
 
 app ∷ App.App TodoEffect (Const Void) Model Action
 app =
   { render
   , update
   , subs: const mempty
-  , init: App.purely initialModel
+  , init: loadSettings initialModel
   }
 
---data Sub a = GotContent a
+runEffect ∷ TodoEffect ~> Aff
+runEffect = case _ of
+              LoadContent model next ->
+                do
+                  res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/v1/users", method = Left GET })
+                  let maybeJsonArray = decodeJson res.response :: Either String (Array Json)
+                      maybeBlogPosts = (maybeJsonArray >>= traverse decodeJson ) :: Either String (Array BlogPost)
+                  liftEffect $ log $ "GET /api response: " <> stringify res.response
+                  pure (next maybeBlogPosts)
+              
+              LoadSettings model next -> 
+                do
+                  res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/v1/settings", method = Left GET })
+                  let maybeJson = decodeJson res.response :: Either String Json
+                      maybeSettings = (maybeJson >>= decodeJson ) :: Either String Settings
+                  liftEffect $ log $ "GET /api response: " <> stringify res.response
+                  pure (next $ either (\_ -> defaultSettings) identity maybeSettings )
 
-runTodoEffect ∷ TodoEffect ~> Effect
-runTodoEffect = case _ of
-                    WriteStorage model next ->
-                        do
-                            _ <- launchAff $ do
-                                res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/users", method = Left GET })
-                                liftEffect $ log $ "GET /api response: " <> J.stringify res.response
-                            pure next
+handleErrors :: Error -> Effect Unit
+handleErrors error = Console.log $ show error 
 
-data Sub a = SendInc
-
-interpreter ∷ Interpreter Effect Sub Action
-interpreter = Interpreter $ EventQueue.withCont \queue input -> 
-  do
-    action <- launchAff $ do
-        res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/users", method = Left GET })
-        _ <- liftEffect $ log $ "GET /api response: " <> J.stringify res.response
-        pure res 
-
-    queue.push Inc
-    
 main ∷ Effect Unit
 main = do
+        let interpreter = throughAff runEffect handleErrors
         inst <-
             App.makeWithSelector
-                (liftNat runTodoEffect `merge` never)
+                (interpreter `merge` never)
                 app
                 "#app"
+        
         inst.run
+
