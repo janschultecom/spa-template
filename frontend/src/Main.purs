@@ -22,21 +22,21 @@ import Spork.Html (Html)
 import Spork.Html as H
 import Spork.Interpreter (merge, never, throughAff)
 
-data BlogPost = BlogPost { email :: String, name :: String }
+data Article = Article { title :: String, content :: String }
 
 data Settings = Settings { language :: String }
 
 type Model = {
   settings :: Settings,
-  maybeBlog :: Either String (Array BlogPost)
+  maybeBlog :: Either String (Array Article)
 }
 
-instance decodeJsonBlogPost :: DecodeJson BlogPost where
+instance decodeJsonArticle :: DecodeJson Article where
   decodeJson json = do
     obj <- decodeJson json
-    email <- obj .? "email"
-    name <- obj .? "name"
-    pure $ BlogPost { email, name }
+    title <- obj .? "title"
+    content <- obj .? "content"
+    pure $ Article { title, content }
 
 instance decodeSettings :: DecodeJson Settings where
   decodeJson json = do
@@ -44,7 +44,7 @@ instance decodeSettings :: DecodeJson Settings where
     language <- obj .? "language"
     pure $ Settings { language }
 
-data Action = None | Get | GotContent (Either String (Array BlogPost)) | GotSettings Settings
+data Action = None | Get | GotContent (Either String (Array Article)) | GotSettings Settings
 
 loadContent ∷ Model → App.Transition TodoEffect Model Action
 loadContent model =
@@ -65,14 +65,14 @@ update model @ {settings : settings, maybeBlog} = case _ of
   Get -> loadContent model
   None -> App.purely model
 
-renderPost :: BlogPost -> Array (Html Action)
-renderPost (BlogPost { email, name}) =
-  [ H.text (show email),
-    H.text (show name)
+renderPost :: Article -> Array (Html Action)
+renderPost (Article { title, content}) =
+  [ H.h1 [] [H.text title],
+    H.p [] [H.text content]
   ]
 
-renderContent :: Either String (Array BlogPost) -> Array (Html Action)
-renderContent (Left msg) = [ H.text ("Failed to load content: " <> msg) ]
+renderContent :: Either String (Array Article) -> Array (Html Action)
+renderContent (Left msg) = [ H.text msg ]
 renderContent (Right posts) = posts >>= renderPost
 
 render ∷ Model → Html Action
@@ -82,7 +82,7 @@ render { settings : Settings s, maybeBlog } =
           [ H.text ("Language " <> s.language) ]
       , H.button
           [ H.onClick (H.always_ Get) ]
-          [ H.text "Got blog, get more..." ]
+          [ H.text "Fetch articles" ]
       , H.span []
           (renderContent maybeBlog)
       ]
@@ -93,7 +93,7 @@ defaultSettings = Settings { language: "en" }
 initialModel :: Model
 initialModel = { settings : defaultSettings , maybeBlog : Left "" } 
 
-data TodoEffect a = LoadContent Model (Either String (Array BlogPost) -> a) |
+data TodoEffect a = LoadContent Model (Either String (Array Article) -> a) |
   LoadSettings Model (Settings -> a)
 
 app ∷ App.App TodoEffect (Const Void) Model Action
@@ -108,11 +108,11 @@ runEffect ∷ TodoEffect ~> Aff
 runEffect = case _ of
               LoadContent model next ->
                 do
-                  res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/v1/users", method = Left GET })
+                  res <- AX.affjax AXRes.json (AX.defaultRequest { url = "/api/v1/articles", method = Left GET })
                   let maybeJsonArray = decodeJson res.response :: Either String (Array Json)
-                      maybeBlogPosts = (maybeJsonArray >>= traverse decodeJson ) :: Either String (Array BlogPost)
+                      maybeArticles = (maybeJsonArray >>= traverse decodeJson ) :: Either String (Array Article)
                   liftEffect $ log $ "GET /api response: " <> stringify res.response
-                  pure (next maybeBlogPosts)
+                  pure (next maybeArticles)
               
               LoadSettings model next -> 
                 do

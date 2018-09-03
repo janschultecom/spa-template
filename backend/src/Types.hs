@@ -8,7 +8,7 @@ import Data.Aeson.Types (ToJSON, FromJSON)
 import GHC.Generics 
 
 type API = "settings" :> Get '[JSON] FrontendSettings
-      :<|> "users" :> QueryParam "sortBy" SortBy :> Get '[JSON] [User]
+      :<|> "articles" :> QueryParam "sortBy" SortBy :> Get '[JSON] [Article]
 
 type APIv1 = "api"  :> "v1" :> API 
                  
@@ -18,21 +18,20 @@ data FrontendSettings = FrontendSettings {
 
 instance ToJSON FrontendSettings 
 
-data SortBy = Age | Name
+data SortBy = Date | Title
 
 instance FromHttpApiData SortBy where
-  parseQueryParam "age" = Right Age
-  parseQueryParam "name" = Right Name
+  parseQueryParam "date" = Right Date
+  parseQueryParam "title" = Right Title
   parseQueryParam v = Left ("Invalid sort method: " <> v)
 
-data User = User {
-  name :: Text,
-  age :: Int,
-  email :: Text,
+data Article = Article {
+  title :: Text,
+  content :: Text,
   registration_date :: UTCTime
 } deriving (Eq, Generic, Show)
 
-instance ToJSON User
+instance ToJSON Article
 
 data HttpError = HttpError 
   {
