@@ -1,4 +1,4 @@
-[![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
+[![License](https://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 # SPA template
 This is a single-page-app template I use for my web project. It consists of a headless, decoupled frontend and a backend REST API. The frontend is written in purescript in the Elm architecture (TEA) using Spork. The backend is written in Haskell using Servant.
@@ -16,11 +16,14 @@ I decided to completely separate the frontend from the backend (headless fronten
 ## Lightweight
 I want to have both, frontend and backend, as lightweight as possible from a development point of view. 
 
-* Frontend uses spork, a purescript implementation of TEA, which https://github.com/i-am-the-slime recommended me. In comparison to other frameworks like react or halogen, spork respectively TEA caused me the least headache. 
+* Frontend uses spork, a purescript implementation of TEA, that [i-am-the-slime](https://github.com/i-am-the-slime) recommended me. In comparison to other frameworks like react or halogen, spork respectively TEA caused me the least headache. 
 * Backend uses servant as a lightweight http api on top of a http server. 
 
 ## Dockerised with hot-reload
 It should be self-contained so one can just check it out and immediately run it using docker-compose. Furthermore, I wanted to have both frontend & backend having hot-reload. It makes development just so much more fun.
+
+## Purescript & Haskell
+...because I like it and I think it's the future :-)
 
 # Using
 
