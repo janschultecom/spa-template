@@ -3,6 +3,15 @@
 # SPA template
 This is a single-page-app template I use for my web project. It consists of a headless, decoupled frontend and a backend REST API. The frontend is written in purescript in the Elm architecture (TEA) using Spork. The backend is written in Haskell using Servant.
 
+# Using
+```
+git clone git@github.com:janschultecom/spa-template.git
+
+docker-compose up
+
+open http://localhost:80
+```
+
 # Design goals & decisions
 I wanted to have a minimalist SPA template that I can use as a starting point for developing SPAs. 
 
@@ -24,13 +33,3 @@ It should be self-contained so one can just check it out and immediately run it 
 
 ## Purescript & Haskell
 ...because I like it and I think it's the future :-)
-
-# Using
-
-```
-git clone git@github.com:janschultecom/spa-template.git
-
-docker-compose up
-
-open http://localhost:80
-```
