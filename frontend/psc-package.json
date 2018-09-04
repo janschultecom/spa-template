@@ -1,7 +1,7 @@
 {
   "name": "test",
-  "set": "testing",
-  "source": "",
+  "set": "master",
+  "source": "https://github.com/janschultecom/package-sets.git",
   "depends": [
     "argonaut",
     "aff",
