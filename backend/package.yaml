@@ -72,7 +72,7 @@ extra-source-files:
 - ChangeLog.md
 author: Jan Schulte
 github: janschultecom/spa-template
-license: Apache V2
+license: Apache-2.0
 executables:
   spa-template-exe:
     source-dirs: app
