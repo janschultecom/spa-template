@@ -1,6 +1,19 @@
 FROM node:8.11
 
+ENV PSC_PACKAGE_VERSION v0.4.2
+
+RUN cd /opt \
+    && wget https://github.com/purescript/psc-package/releases/download/$PSC_PACKAGE_VERSION/linux64.tar.gz \
+    # && echo "$PSC_PACKAGE_DOWNLOAD_SHA1 linux64.tar.gz" | sha1sum -c - \
+    && tar -xvf linux64.tar.gz \
+    && export PATH=/opt/psc-package/:$PATH \
+    && rm /opt/linux64.tar.gz
+
+ENV PATH /opt/psc-package:$PATH
+
 RUN npm update \
   && npm install -g parcel-bundler  \
   && npm install -g purescript --unsafe-perm=true \
   && npm install -g pulp
+
+WORKDIR /root

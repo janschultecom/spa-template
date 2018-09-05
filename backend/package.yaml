@@ -1,7 +1,7 @@
 library:
   source-dirs: src
 tests:
-  servant-example-test:
+  spa-template-test:
     source-dirs: test
     main: Spec.hs
     ghc-options:
@@ -9,7 +9,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - servant-example
+    - spa-template
 copyright: 2018 Jan Schulte
 maintainer: jan@janschulte.com
 ghc-options:
@@ -65,16 +65,16 @@ default-extensions:
 - TypeFamilies
 - TypeFamilyDependencies
 - TypeOperators
-name: servant-example
+name: spa-template
 version: 0.1.0.0
 extra-source-files:
 - README.md
 - ChangeLog.md
 author: Jan Schulte
-github: janschultecom/servant-example
+github: janschultecom/spa-template
 license: BSD3
 executables:
-  servant-example-exe:
+  spa-template-exe:
     source-dirs: app
     main: Main.hs
     ghc-options:
@@ -82,5 +82,5 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - servant-example
-description: Please see the README on GitHub at <https://github.com/janschultecom/servant-example#readme>
+    - spa-template
+description: Please see the README on GitHub at <https://github.com/janschultecom/spa-template#readme>
