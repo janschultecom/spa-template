@@ -9,6 +9,9 @@
 *.purs*
 *.psa*
 *dist/
+frontend/package-lock.json
+frontend/.config/
+frontend/.npm/
 
 # Backend - Haskell
 *.stack-work/
