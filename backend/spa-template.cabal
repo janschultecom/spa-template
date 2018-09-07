@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 74cc6c97c0c297e295eb39290229700faa41ff9743a377620076445e8094f509
+-- hash: 49bd95b63e1f18e72d301fa6d361f589a748e609c24a3db87ac12c8a1d8fde98
 
 name:           spa-template
 version:        0.1.0.0
@@ -12,7 +12,7 @@ bug-reports:    https://github.com/janschultecom/spa-template/issues
 author:         Jan Schulte
 maintainer:     jan@janschulte.com
 copyright:      2018 Jan Schulte
-license:        Apache-2.0 
+license:        Apache-2.0
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:
