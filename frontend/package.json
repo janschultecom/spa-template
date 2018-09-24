@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "start": "parcel index.html"
+    "start": "parcel index.html",
+    "build:fe": "purs bundle './output/*/*.js' -m Main --main Main -o build/index.js && npm run build:parcel",
+    "build:parcel": "parcel build build/index.js -d dist"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
