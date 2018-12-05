@@ -1,0 +1,16 @@
+FROM haskell:8.4.3 as builder
+
+RUN mkdir /opt/build
+COPY . /opt/build
+RUN cd /opt/build && stack build --system-ghc
+
+FROM debian/stretch-slim:9.5-slim
+RUN mkdir -p /opt/app
+ARG BINARY_PATH
+WORKDIR /opt/app
+RUN apk update 
+
+COPY --from=builder /opt/build/.stack-work/install/x86_64-linux/lts-12.2/8.4.3/bin .
+#COPY static /opt/app/static
+#COPY config /opt/app/config
+CMD ["/opt/app/spa-template-exe"]
